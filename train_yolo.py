@@ -16,8 +16,8 @@ except ImportError:
 # 1. SETUP PATHS
 # ==========================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SRC_DIR = os.path.join(BASE_DIR, "DataSets", "provide_more")
-SPLIT_DIR = os.path.join(BASE_DIR, "DataSets", "provide_more_split")
+SRC_DIR = os.path.join(BASE_DIR, "DataSets", "Train")
+SPLIT_DIR = os.path.join(BASE_DIR, "DataSets", "raw_split")
 
 CATEGORIES = ['cardboard', 'compost', 'glass', 'metal', 'paper', 'plastic', 'trash']
 
@@ -34,8 +34,8 @@ for cat in CATEGORIES:
         total_images += len(glob.glob(os.path.join(cat_path, "*.*")))
 
 if total_images == 0:
-    print("ERROR: No images found inside 'DataSets/provide_more' subfolders.")
-    print("Please run 'download_and_curate.py' first to download and prepare the dataset.")
+    print("ERROR: No images found inside 'DataSets/Train' subfolders.")
+    print("Please verify your dataset extraction under DataSets/Train.")
     sys.exit(1)
 
 print(f"Found {total_images} total images across 7 classes in '{SRC_DIR}'.")
@@ -154,11 +154,14 @@ try:
         name="train_cls"
     )
     
-    # Locate best.pt weight file
-    best_weight_path = os.path.join(BASE_DIR, "yolo_waste_runs", "train_cls", "weights", "best.pt")
+    # Locate best.pt weight file dynamically by finding the newest best.pt weights
+    import glob
+    runs_dir = os.path.join(BASE_DIR, "yolo_waste_runs")
+    best_weight_paths = glob.glob(os.path.join(runs_dir, "**", "weights", "best.pt"), recursive=True)
+    best_weight_path = max(best_weight_paths, key=os.path.getmtime) if best_weight_paths else ""
     target_weight_path = os.path.join(BASE_DIR, "yolo26_waste.pt")
     
-    if os.path.exists(best_weight_path):
+    if best_weight_path and os.path.exists(best_weight_path):
         shutil.copy2(best_weight_path, target_weight_path)
         print("\n==========================================")
         print("CONGRATULATIONS: Training Completed Successfully!")
