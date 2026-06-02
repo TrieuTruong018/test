@@ -1,0 +1,26 @@
+### 1. Đột phá về Kiến trúc & Tốc độ: VGG16 (Nặng 528MB) $\rightarrow$ MobileNetV2 (Nhẹ 14MB)
+
+* **Bản gốc (2019):** Sử dụng VGG16 cực kỳ nặng nề (138 triệu tham số), huấn luyện trên CPU mất nhiều tiếng đồng hồ và dễ gây đông cứng hệ thống, độ chính xác chỉ đạt ~43% sau 5 epochs do hạn chế phần cứng không thể chạy nhiều epochs.
+
+* **Cải tiến GreenCycle AI:** Chuyển dịch sang MobileNetV2 tối tân sử dụng tích chập tách biệt chiều sâu (Depthwise Separable Convolutions). Mô hình siêu nhẹ (~14MB), **tốc độ huấn luyện trên CPU/GPU nhanh gấp 15 - 20 lần**, giúp bạn chạy huấn luyện 10 epochs chỉ trong vài phút ngay từ trình duyệt!
+
+
+
+### 2. Đột phá về Chất lượng nhận diện: Kỹ thuật Tinh chỉnh sâu 2 Giai đoạn (Two-Stage Fine-Tuning)
+
+* **Bản gốc (2019):** Huấn luyện 1 giai đoạn thô sơ, đóng băng hoàn toàn base layers. Mô hình nhận diện dựa vào các đặc trưng chung chung của ImageNet, rất dễ bị đánh lừa bởi các bao bì sặc sỡ hoặc các màu sắc tương tự nhau.
+
+* **Cải tiến GreenCycle AI:** Áp dụng quy trình huấn luyện 2 bước chuẩn công nghiệp:
+
+  * *Giai đoạn 1 (Epoch 1-3):* Huấn luyện ấm (warm-up) bộ đầu ra mới với tốc độ học lớn `1e-3` để ổn định trọng số phân loại.
+
+  * *Giai đoạn 2 (Epoch 4-10):* **Mở khóa 50 lớp tích chập cuối cùng** của MobileNetV2, huấn luyện sâu toàn mạng với tốc độ học siêu nhỏ `1e-5` kết hợp chuẩn hóa **Batch Normalization** và **Regularization L2 (0.001)**. Việc này ép buộc mô hình tự điều chỉnh lại các mắt lọc để **nhận diện hình học đặc thù** (cổ chai nhựa, nếp gấp carton) thay vì bị đánh lừa bởi màu sắc sặc sỡ bên ngoài!
+
+
+
+### 3. Đột phá về Trải nghiệm (Jupyter Notebook $\rightarrow$ Web App AI tương tác)
+
+* **Bản gốc (2019):** Chỉ là các tệp code Jupyter Notebook chạy cục bộ, yêu cầu người dùng phải có chuyên môn lập trình, chạy từng khối lệnh thủ công và tự vẽ đồ thị bằng code.
+
+* **Cải tiến GreenCycle AI:** Trở thành một **ứng dụng Web sinh thái Glassmorphism cao cấp**. Người dùng kéo thả ảnh mượt mà, xem phân phối xác suất và từ điển rác sinh thái trực quan. Đặc biệt nhất là **Bảng điều khiển Huấn luyện trực tiếp từ Web**: Bạn bấm nút, xem logs chạy thời gian thực và nhìn biểu đồ độ chính xác Chart.js tự động vẽ trực tiếp theo từng epoch! 
+

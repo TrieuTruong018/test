@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenCycle - Hệ Thống Phân Loại Rác Thải Deep Learning</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js for real-time training graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="decor-blob-1"></div>
+    <div class="decor-blob-2"></div>
+    <div class="decor-blob-3"></div>
+
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand">
+                <i class="fa-solid fa-leaf logo-icon"></i>
+                <div class="brand-text">
+                    <h1>GreenCycle AI</h1>
+                    <span>Waste Classification System</span>
+                </div>
+            </div>
+            <nav class="main-nav">
+                <button class="nav-btn active" data-tab="classifier-tab">
+                    <i class="fa-solid fa-qrcode"></i> Nhận Diện Rác
+                </button>
+                <button class="nav-btn" data-tab="training-tab">
+                    <i class="fa-solid fa-brain"></i> Huấn Luyện Mô Hình
+                </button>
+                <button class="nav-btn" data-tab="encyclopedia-tab">
+                    <i class="fa-solid fa-book-open"></i> Cẩm Nang Sinh Thái
+                </button>
+                <button class="nav-btn" data-tab="insights-tab">
+                    <i class="fa-solid fa-chart-line"></i> Phân Tích Kỹ Thuật
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="app-body">
+        <!-- 1. CLASSIFIER TAB -->
+        <section id="classifier-tab" class="tab-panel active">
+            <div class="hero-section">
+                <h2>Phân Loại Rác Thông Minh Bằng Trí Tuệ Nhân Tạo</h2>
+                <p>Tải lên hoặc kéo thả hình ảnh rác thải để hệ thống phân tích, phân loại tự động và đưa ra các chỉ dẫn tái chế tối ưu giúp bảo vệ môi trường.</p>
+            </div>
+            
+            <div class="classifier-layout">
+                <div class="glass-card upload-container">
+                    <h3><i class="fa-regular fa-image"></i> Tải lên hình ảnh phân tích</h3>
+                    
+                    <!-- Model Selector Panel -->
+                    <div class="model-selector-panel">
+                        <label class="panel-label"><i class="fa-solid fa-layer-group"></i> Lựa chọn Công nghệ Nhận diện</label>
+                        <div class="model-cards-grid">
+                            <!-- Model Card 1: TensorFlow MobileNetV2 -->
+                            <div class="model-card active" data-model="mobilenet">
+                                <div class="card-glow glow-tf"></div>
+                                <div class="model-card-header">
+                                    <span class="card-title-icon"><i class="fa-solid fa-brain"></i></span>
+                                    <span class="badge-tech tech-tf">TensorFlow</span>
+                                </div>
+                                <h4>GreenCycle Net (MobileNetV2)</h4>
+                                <p>Cải tiến học thuật với khối SE + Focal Loss. Hỗ trợ chụp bản đồ nhiệt XAI Grad-CAM minh bạch.</p>
+                            </div>
+                            
+                            <!-- Model Card 2: PyTorch YOLO26 -->
+                            <div class="model-card" data-model="yolo26">
+                                <div class="card-glow glow-yolo"></div>
+                                <div class="model-card-header">
+                                    <span class="card-title-icon"><i class="fa-solid fa-bolt text-amber-400"></i></span>
+                                    <span class="badge-tech tech-yolo">PyTorch</span>
+                                </div>
+                                <h4>YOLO26-cls (State-of-the-Art)</h4>
+                                <p>Kiến trúc tối tân của năm 2026. Nhận diện hình học biên dạng siêu tốc, chính xác vượt trội.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="drop-zone" id="drop-zone">
+                        <input type="file" id="image-input" accept="image/*" style="display: none;">
+                        <div class="drop-zone-content" id="drop-zone-content">
+                            <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                            <p class="main-desc">Kéo và thả ảnh vào đây hoặc click để duyệt file</p>
+                            <p class="sub-desc">Hỗ trợ JPG, PNG, WEBP lên đến 16MB</p>
+                        </div>
+                        <div class="preview-container" id="preview-container" style="display: none;">
+                            <img id="image-preview" src="#" alt="Preview Image">
+                            <button class="btn-clear" id="btn-clear"><i class="fa-solid fa-xmark"></i> Xóa ảnh</button>
+                        </div>
+                    </div>
+                    <button class="btn-primary" id="btn-classify" disabled>
+                        <span id="btn-classify-text"><i class="fa-solid fa-bolt"></i> Bắt đầu phân loại</span>
+                        <div class="spinner" id="classify-spinner" style="display: none;"></div>
+                    </button>
+                </div>
+                
+                <div class="glass-card result-container" id="result-container">
+                    <div class="result-placeholder" id="result-placeholder">
+                        <i class="fa-solid fa-circle-question placeholder-icon"></i>
+                        <h4>Chờ hình ảnh phân tích...</h4>
+                        <p>Kết quả phân loại, độ chính xác và các chỉ dẫn tái chế thân thiện với môi trường sẽ hiển thị tại đây sau khi bạn tải ảnh lên.</p>
+                    </div>
+                    
+                    <div class="result-content" id="result-content" style="display: none;">
+                        <div class="result-header">
+                            <div class="result-badge" id="result-badge">Plastic</div>
+                            <div class="result-score" id="result-score">98.5%</div>
+                        </div>
+                        <div class="result-meta">
+                            <span id="result-method"><i class="fa-solid fa-microchip"></i> Model: Fallback</span>
+                        </div>
+                        
+                        <!-- Explainable AI (XAI) Grad-CAM interactive viewer -->
+                        <div class="xai-section" id="xai-section" style="display: none;">
+                            <div class="xai-header">
+                                <h4><i class="fa-solid fa-eye text-emerald-400"></i> Tính Minh Bạch AI (Explainable AI)</h4>
+                                <span class="xai-badge">Bản đồ nhiệt Grad-CAM</span>
+                            </div>
+                            <p class="xai-description">Xem chính xác các vùng đặc trưng hình học mà mô hình AI tập trung phân tích nhiều nhất để đưa ra quyết định.</p>
+                            
+                            <div class="xai-display-card">
+                                <div class="xai-image-wrapper">
+                                    <img id="xai-image-view" src="#" alt="XAI Analysis Image" class="xai-image">
+                                    <span class="xai-image-tag" id="xai-image-tag">Ảnh Gốc</span>
+                                </div>
+                                <div class="xai-controls">
+                                    <button class="btn-xai active" id="btn-xai-orig" type="button">
+                                        <i class="fa-regular fa-image"></i> Ảnh Gốc
+                                    </button>
+                                    <button class="btn-xai" id="btn-xai-cam" type="button">
+                                        <i class="fa-solid fa-fire-flame-simple text-rose-500"></i> Bản Đồ Nhiệt (AI Focus)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="eco-recommendation-card" id="eco-recommendation-card">
+                            <h4 id="eco-title">Chai nhựa tái chế</h4>
+                            <div class="eco-details">
+                                <div class="eco-detail-item">
+                                    <span class="label"><i class="fa-solid fa-hourglass-half"></i> Thời gian phân hủy:</span>
+                                    <span class="value" id="eco-decomposition">100 - 500 năm</span>
+                                </div>
+                                <div class="eco-detail-item">
+                                    <span class="label"><i class="fa-solid fa-recycle"></i> Chỉ dẫn tái chế:</span>
+                                    <span class="value" id="eco-tip">Rửa sạch trước khi phân loại. Hạn chế sử dụng nhựa một lần.</span>
+                                </div>
+                                <div class="eco-detail-item">
+                                    <span class="label"><i class="fa-solid fa-circle-info"></i> Sự thật thú vị:</span>
+                                    <span class="value" id="eco-fact">Tái chế 1 tấn nhựa tiết kiệm hàng ngàn lít dầu thô.</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="all-predictions-section">
+                            <h4><i class="fa-solid fa-chart-bar"></i> Phân phối xác suất từ mô hình</h4>
+                            <div class="predictions-list" id="predictions-list">
+                                <!-- Dynamic items will be added here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. TRAINING TAB -->
+        <section id="training-tab" class="tab-panel">
+            <div class="hero-section">
+                <h2>Bảng Điều Khiển Huấn Luyện Mô Hình Trực Tiếp</h2>
+                <p>Tự động hóa huấn luyện mô hình Học Sâu trên tập dữ liệu của riêng bạn. Quá trình này sẽ tinh chỉnh (fine-tune) một mô hình MobileNetV2 siêu nhẹ trực tiếp trên các lớp rác hiện có.</p>
+            </div>
+            
+            <div class="training-layout">
+                <div class="glass-card training-controls">
+                    <h3><i class="fa-solid fa-gears"></i> Cấu hình Huấn Luyện</h3>
+                    
+                    {% if not dataset_exists %}
+                    <div class="alert alert-warning">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <div class="alert-content">
+                            <h4>Không tìm thấy tập dữ liệu (Dataset)!</h4>
+                            <p>Thư mục <code>DataSets/Train</code> hiện tại của bạn chưa có dữ liệu rác. Vui lòng tải tập dữ liệu rác đầy đủ từ link Google Drive của tác giả bên dưới và giải nén đúng cấu trúc thư mục trước khi thực hiện huấn luyện.</p>
+                            <a href="https://drive.google.com/drive/folders/1IHlDN1oXhsnb9xAwUOQJrfJ3s83mkDeg" target="_blank" class="btn-alert-link">
+                                <i class="fa-brands fa-google-drive"></i> Tải Dataset từ Google Drive
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <div class="alert-content">
+                            <h4>Đã tìm thấy tập dữ liệu!</h4>
+                            <p>Tập dữ liệu trong <code>DataSets/Train</code> và <code>DataSets/Test</code> đã sẵn sàng để huấn luyện Học Sâu.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="control-group">
+                        <label for="epochs-input">Số lượng kỷ nguyên (Epochs)</label>
+                        <div class="custom-select-wrapper">
+                            <select id="epochs-input" disabled>
+                                <option value="10" selected>10 Epochs (Mới - Tinh Chỉnh Sâu GPU/CPU)</option>
+                                <option value="5">5 Epochs (Rút gọn)</option>
+                                <option value="20">20 Epochs (Rất sâu)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Phương pháp Học sâu</label>
+                        <div class="method-badge">
+                            <i class="fa-solid fa-arrow-right-arrow-left"></i> MobileNetV2 Transfer Learning
+                        </div>
+                    </div>
+                    
+                    <button class="btn-primary" id="btn-start-training" {% if not dataset_exists %}disabled{% endif %}>
+                        <span id="btn-train-text"><i class="fa-solid fa-play"></i> Bắt đầu Huấn Luyện</span>
+                        <div class="spinner" id="train-spinner" style="display: none;"></div>
+                    </button>
+                    
+                    <div class="training-metrics-panel" id="training-metrics-panel" style="display: none;">
+                        <h4>Tiến trình hiện tại: <span id="progress-percent">0%</span></h4>
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
+                        </div>
+                        
+                        <div class="metrics-grid">
+                            <div class="metric-box">
+                                <span class="label">Kỷ nguyên</span>
+                                <span class="value" id="metric-epoch">-</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="label">Độ chính xác</span>
+                                <span class="value" id="metric-acc">-</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="label">Độ lỗi (Loss)</span>
+                                <span class="value" id="metric-loss">-</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="label">Val Acc</span>
+                                <span class="value" id="metric-val-acc">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-card training-visuals">
+                    <h3><i class="fa-solid fa-chart-line"></i> Biểu đồ Hiệu năng thời gian thực</h3>
+                    <div class="chart-container">
+                        <canvas id="training-chart"></canvas>
+                    </div>
+                    
+                    <div class="terminal-log-wrapper">
+                        <div class="terminal-header">
+                            <span><i class="fa-solid fa-terminal"></i> Bảng điều khiển Console Logs</span>
+                            <span class="pulse-dot" id="console-pulse" style="display: none;"></span>
+                        </div>
+                        <textarea class="terminal-body" id="terminal-body" readonly placeholder="Hệ thống học sâu đang ở trạng thái nghỉ... Nhấn Bắt đầu huấn luyện để xem tiến trình logs chi tiết ở đây."></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. ENCYCLOPEDIA TAB -->
+        <section id="encyclopedia-tab" class="tab-panel">
+            <div class="hero-section">
+                <h2>Cẩm Nang Phân Loại Rác Thải & Bảo Vệ Sinh Thái</h2>
+                <p>Khám phá hướng dẫn phân loại 7 nhóm rác thải sinh hoạt, thời gian phân hủy của chúng ngoài tự nhiên và các mẹo thực tế giúp giảm dấu chân carbon của bạn.</p>
+            </div>
+            
+            <div class="encyclopedia-grid">
+                <!-- Cardboard -->
+                <div class="glass-card eco-card" style="--card-color: #d97706;">
+                    <div class="eco-card-header">
+                        <i class="fa-solid fa-box eco-card-icon"></i>
+                        <h3>Cardboard</h3>
+                    </div>
+                    <p class="eco-card-desc">Hộp bìa giấy carton, thùng hàng đóng gói bằng giấy dày.</p>
+                    <div class="eco-card-meta">
+                        <span><i class="fa-regular fa-clock"></i> 2 - 3 tháng phân hủy</span>
+                    </div>
+                    <div class="eco-card-body">
+                        <h5>Mẹo phân loại:</h5>
+                        <p>Tháo dỡ băng keo nhựa dính trên hộp trước khi phân loại. Ép dẹt thùng để tối ưu không gian thu gom.</p>
+                    </div>
+                </div>
+
+                <!-- Compost -->
+                <div class="glass-card eco-card" style="--card-color: #16a34a;">
+                    <div class="eco-card-header">
+                        <i class="fa-solid fa-apple-whole eco-card-icon"></i>
+                        <h3>Compostable</h3>
+                    </div>
+                    <p class="eco-card-desc">Thực phẩm thừa, vỏ trái cây, bã cà phê, rau củ và lá khô mục.</p>
+                    <div class="eco-card-meta">
+                        <span><i class="fa-regular fa-clock"></i> Vài tuần - vài tháng</span>
+                    </div>
+                    <div class="eco-card-body">
+                        <h5>Mẹo phân loại:</h5>
+                        <p>Tránh để lẫn túi nilon thông thường vào thùng ủ. Sử dụng làm phân bón tự nhiên giàu dinh dưỡng cho cây trồng.</p>
+                    </div>
+                </div>
+
+                <!-- Glass -->
+                <div class="glass-card eco-card" style="--card-color: #06b6d4;">
+                    <div class="eco-card-header">
+                        <i class="fa-solid fa-wine-bottle eco-card-icon"></i>
+                        <h3>Glass</h3>
+                    </div>
+                    <p class="eco-card-desc">Chai thủy tinh đựng rượu, bia, nước ngọt, hũ lọ gia vị, mỹ phẩm bằng thủy tinh.</p>
+                    <div class="eco-card-meta">
+                        <span><i class="fa-regular fa-clock"></i> Hàng triệu năm</span>
+                    </div>
+                    <div class="eco-card-body">
+                        <h5>Mẹo phân loại:</h5>
+                        <p>Rửa tráng sạch bên trong lọ. Thủy tinh vỡ cần được bọc cẩn thận để tránh gây thương tích cho công nhân thu gom.</p>
+                    </div>
+                </div>
+
+                <!-- Metal -->
+                <div class="glass-card eco-card" style="--card-color: #e2e8f0;">
+                    <div class="eco-card-header">
+                        <i class="fa-solid fa-circle-stop eco-card-icon"></i>
+                        <h3>Metal</h3>
+                    </div>
+                    <p class="eco-card-desc">Lon nhôm (nước ngọt, bia), hộp thiếc (sữa, đồ hộp), các mảnh kim loại vụn sắt thép.</p>
+                    <div class="eco-card-meta">
+                        <span><i class="fa-regular fa-clock"></i> 80 - 200 năm phân hủy</span>
+                    </div>
+                    <div class="eco-card-body">
+                        <h5>Mẹo phân loại:</h5>
+                        <p>Bóp xẹp vỏ lon nhôm nếu có thể. Tái chế kim loại tiết kiệm hơn 95% năng lượng so với việc tinh chế kim loại mới.</p>
+                    </div>
+                </div>
+
+                <!-- Paper -->
+                <div class="glass-card eco-card" style="--card-color: #f59e0b;">
+                    <div class="eco-card-header">
+                        <i class="fa-regular fa-file-lines eco-card-icon"></i>
+                        <h3>Paper</h3>
+                    </div>
+                    <p class="eco-card-desc">Giấy báo cũ, sách vở, tạp chí, giấy văn phòng A4 đã in, phong bì thư.</p>
+                    <div class="eco-card-meta">
+                        <span><i class="fa-regular fa-clock"></i> 2 - 6 tuần phân hủy</span>
+                    </div>
+                    <div class="eco-card-body">
+                        <h5>Mẹo phân loại:</h5>
+                        <p>Không vứt giấy dính dầu mỡ thực phẩm, giấy tráng nhựa chống thấm hay hóa đơn in nhiệt bóng vào thùng tái chế giấy.</p>
+                    </div>
+                </div>
+
+                <!-- Plastic -->
+                <div class="glass-card eco-card" style="--card-color: #3b82f6;">
+                    <div class="eco-card-header">
+                        <i class="fa-solid fa-bottle-water eco-card-icon"></i>
+                        <h3>Plastic</h3>
+                    </div>
+                    <p class="eco-card-desc">Chai nước, hộp sữa chua nhựa, túi nilon mềm, chai dầu gội, cốc nhựa dùng 1 lần.</p>
+                    <div class="eco-card-meta">
+                        <span><i class="fa-regular fa-clock"></i> 100 - 500 năm phân hủy</span>
+                    </div>
+                    <div class="eco-card-body">
+                        <h5>Mẹo phân loại:</h5>
+                        <p>Kiểm tra ký hiệu tái chế nhựa dưới đáy chai (PETE 1, HDPE 2 là tái chế tốt nhất). Rửa sạch chai và tháo nắp.</p>
+                    </div>
+                </div>
+
+                <!-- Trash -->
+                <div class="glass-card eco-card" style="--card-color: #6b7280;">
+                    <div class="eco-card-header">
+                        <i class="fa-solid fa-trash-can eco-card-icon"></i>
+                        <h3>Trash</h3>
+                    </div>
+                    <p class="eco-card-desc">Rác thải sinh hoạt thông thường không có khả năng tái chế hoặc bị nhiễm bẩn.</p>
+                    <div class="eco-card-meta">
+                        <span><i class="fa-regular fa-clock"></i> Không phân hủy / chôn lấp</span>
+                    </div>
+                    <div class="eco-card-body">
+                        <h5>Mẹo phân loại:</h5>
+                        <p>Bao gồm tã bỉm em bé, khăn giấy ướt dính chất bẩn, đồ gốm sứ vỡ, hộp xốp đựng cơm. Gom gọn để chôn lấp.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. INSIGHTS TAB -->
+        <section id="insights-tab" class="tab-panel">
+            <div class="hero-section">
+                <h2>Phân Tích Kỹ Thuật & Hiệu Năng Mô Hình Học Sâu</h2>
+                <p>Tổng quan về hiệu năng và kiến trúc kỹ thuật của hệ thống đã huấn luyện bằng VGG16 & ResNet50 sử dụng phương pháp Transfer Learning.</p>
+            </div>
+            
+            <div class="insights-layout">
+                <div class="glass-card original-charts">
+                    <h3><i class="fa-regular fa-image"></i> Kết Quả Huấn Luyện Gốc (Original Training Charts)</h3>
+                    <div class="charts-display-grid">
+                        <div class="chart-img-card">
+                            <h4>Biểu đồ Độ Lỗi VGG16 (Loss Plot)</h4>
+                            <img src="/static/images/LossVal_loss.png" alt="VGG16 Loss Chart" onerror="this.src='https://placehold.co/600x400/1e293b/34d399?text=VGG16+Loss+Chart'">
+                        </div>
+                        <div class="chart-img-card">
+                            <h4>Biểu đồ Độ Chính Xác VGG16 (Accuracy Chart)</h4>
+                            <img src="/static/images/AccVal_acc.png" alt="VGG16 Accuracy Chart" onerror="this.src='https://placehold.co/600x400/1e293b/34d399?text=VGG16+Accuracy+Chart'">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-card evaluation-insights">
+                    <h3><i class="fa-solid fa-table-list"></i> So sánh Hiệu Năng Các Kiến Trúc Mô Hình</h3>
+                    <div class="table-wrapper">
+                        <table class="premium-table">
+                            <thead>
+                                <tr>
+                                    <th>Kiến Trúc Mô Hình (CNN)</th>
+                                    <th>Độ chính xác kiểm thử</th>
+                                    <th>Số lượng Epochs</th>
+                                    <th>Giải Pháp Cải Thiện</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-semibold text-teal-400">VGG-16 with Transfer Learning</td>
+                                    <td>43.03%</td>
+                                    <td>5</td>
+                                    <td>Huấn luyện tới 100 Epochs</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-semibold text-blue-400">ResNet-50 with Transfer Learning</td>
+                                    <td>29.78%</td>
+                                    <td>5</td>
+                                    <td>Huấn luyện tới 100 Epochs</td>
+                                </tr>
+                                <tr class="highlight-row">
+                                    <td class="font-semibold text-emerald-400"><i class="fa-solid fa-circle-up"></i> VGG-16 với Tăng cường dữ liệu (TL)</td>
+                                    <td>72.5%</td>
+                                    <td>20</td>
+                                    <td>Tinh chỉnh thêm tham số (Hyperparameters)</td>
+                                </tr>
+                                <tr class="highlight-row-best">
+                                    <td class="font-semibold text-indigo-400"><i class="fa-solid fa-star"></i> VGG-16 với TL + Tinh chỉnh sâu (Fine Tuning)</td>
+                                    <td>80.8%</td>
+                                    <td>25</td>
+                                    <td>Mô hình tối ưu nhất cho bài toán phân loại</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="insights-summary-box">
+                        <h4><i class="fa-solid fa-lightbulb text-amber-400"></i> Nhận xét từ kỹ sư Học Sâu:</h4>
+                        <p>Việc áp dụng **Transfer Learning (Học chuyển giao)** kết hợp với **Fine-Tuning (Tinh chỉnh tham số)** trên mô hình VGG-16 giúp tăng vọt độ chính xác từ 43.03% lên tới <strong>80.8%</strong>. Phương pháp tăng cường hình ảnh bằng cách phóng đại xoay lật (Data Augmentation) cũng đóng vai trò quyết định giúp mô hình không bị quá khớp (overfitting) trên tập dữ liệu rác nhỏ gồm 2,187 ảnh ban đầu.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TẤM DẤU ẤN ĐẶC TRƯNG - 4 ĐỘT PHÁ TOÁN HỌC & THUẬT TOÁN -->
+            <div class="glass-card custom-breakthroughs-section" style="margin-top: 30px;">
+                <h3><i class="fa-solid fa-graduation-cap text-indigo-400"></i> Dấu Ấn Đột Phá Thuật Toán & Toán Học Học Sâu</h3>
+                <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 25px;">Các cải tiến độc bản do bạn phát triển giúp tối ưu hóa chiều sâu kiến trúc, thúc đẩy hội tụ và đảm bảo tính minh bạch tối đa.</p>
+                
+                <div class="breakthroughs-grid">
+                    <!-- SE Block -->
+                    <div class="breakthrough-card">
+                        <div class="card-icon-wrapper" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+                            <i class="fa-solid fa-compress"></i>
+                        </div>
+                        <h4>Khối SE (Squeeze & Excitation)</h4>
+                        <p class="math-formula">$$\mathbf{s} = \sigma(\mathbf{W}_2 \delta(\mathbf{W}_1 \mathbf{z}))$$</p>
+                        <p class="desc">Khối chú ý kênh (Channel Attention) giúp mô hình tự động thích ứng để tăng/giảm trọng số các đặc trưng hình học quan trọng và loại bỏ nhiễu hậu cảnh.</p>
+                    </div>
+                    
+                    <!-- Focal Loss -->
+                    <div class="breakthrough-card">
+                        <div class="card-icon-wrapper" style="background: rgba(244, 63, 94, 0.1); color: #f43f5e;">
+                            <i class="fa-solid fa-scale-unbalanced"></i>
+                        </div>
+                        <h4>Hàm Mất Mát Focal Loss</h4>
+                        <p class="math-formula">$$FL(p_t) = -\alpha (1 - p_t)^\gamma \log(p_t)$$</p>
+                        <p class="desc">Tự động điều chỉnh trọng số huấn luyện, tập trung dồn lực phạt nặng các ảnh khó phân biệt (thủy tinh/nhựa trong) và lướt qua các ảnh dễ đoán.</p>
+                    </div>
+                    
+                    <!-- Cosine Annealing -->
+                    <div class="breakthrough-card">
+                        <div class="card-icon-wrapper" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                            <i class="fa-solid fa-wave-square"></i>
+                        </div>
+                        <h4>Cosine Annealing Schedule</h4>
+                        <p class="math-formula">$$\eta_t = \eta_{min} + \frac{1}{2}(\eta_{max}-\eta_{min})(1+\cos(\frac{T_{cur}}{T_{max}}\pi))$$</p>
+                        <p class="desc">Tự động giảm tốc độ học theo chu kỳ hình sin mượt mà, giúp rà phanh chính xác tại điểm tối ưu và dễ dàng vượt qua các bẫy cực tiểu cục bộ.</p>
+                    </div>
+                    
+                    <!-- Grad-CAM -->
+                    <div class="breakthrough-card">
+                        <div class="card-icon-wrapper" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;">
+                            <i class="fa-solid fa-chart-area"></i>
+                        </div>
+                        <h4>Explainable AI (Grad-CAM)</h4>
+                        <p class="math-formula">$$L_{Grad-CAM}^c = ReLU(\sum \alpha_k^c A^k)$$</p>
+                        <p class="desc">Giải mã "hộp đen" AI bằng cách hiển thị bản đồ nhiệt (Heatmap) thời gian thực, chứng minh mô hình thực sự phân tích chi tiết các góc cạnh của rác.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <div class="footer-container">
+            <p>&copy; 2026 GreenCycle AI. Hệ thống được xây dựng phục vụ cho thực hành môn Học Sâu.</p>
+            <p class="eco-quote"><i class="fa-solid fa-earth-americas"></i> "Phân loại rác hôm nay, xanh tươi ngày mai."</p>
+        </div>
+    </footer>
+
+    <!-- Custom JavaScript -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

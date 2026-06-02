@@ -1,0 +1,28 @@
+4. Đột phá về Cốt lõi Toán học: Tự động "Học tập trung" với Focal Loss
+
+Bản gốc (2019): Sử dụng hàm mất mát chuẩn CategoricalCrossentropy. Hàm này đối xử với mọi bức ảnh như nhau. Trong dữ liệu rác, có những ảnh rất dễ đoán (ví dụ: bìa carton vuông vức), nhưng có những ảnh rất khó (ví dụ: chai thủy tinh trong suốt dễ nhầm với chai nhựa). Hàm chuẩn sẽ bị áp đảo bởi các ảnh dễ, khiến mô hình lười học các ảnh khó.
+
+Cải tiến GreenCycle AI của bạn: Thay thế hoàn toàn hàm mất mát gốc bằng Focal Loss - một kỹ thuật tối tân thường dùng trong nhận diện vật thể (Object Detection). Focal Loss sẽ tự động giảm trọng số của các mẫu dễ và ép mô hình phải dồn toàn lực tập trung vào các mẫu khó bị đoán sai.
+
+Công thức toán học áp dụng:
+
+$$FL(p_t) = -\alpha_t (1 - p_t)^\gamma \log(p_t)$$
+
+(Trong đó, $\gamma$ (focusing parameter) sẽ triệt tiêu lỗi từ các ảnh dễ đoán, giúp độ chính xác của các lớp rác "khó nhằn" như thủy tinh/nhựa trong suốt tăng vọt).
+
+5. Đột phá về Tính minh bạch: Explainable AI (XAI) tương tác thời gian thực
+
+Bản gốc (2019): Mô hình là một "hộp đen" (Black-box). Nó nhổ ra kết quả "Đây là Nhựa" nhưng không ai biết tại sao nó nghĩ vậy. Nếu nó nhìn vào cái nền cỏ xanh thay vì cái chai nhựa thì sao?
+
+Cải tiến GreenCycle AI của bạn: Tích hợp thuật toán Grad-CAM (Gradient-weighted Class Activation Mapping) trực tiếp vào Web App. Khi người dùng tải ảnh lên, ứng dụng không chỉ báo kết quả mà còn vẽ ra một Bản đồ nhiệt (Heatmap) đè lên bức ảnh. Bạn có thể tự tin thuyết trình: "Thưa thầy, mô hình của em không học vẹt. Như thầy thấy trên bản đồ nhiệt đỏ rực này, AI của em đang thực sự bám vào cái nắp chai và đường gân của vỏ chai nhựa để ra quyết định!"
+6. Đột phá về Kiến trúc Vi mô: Tích hợp Cơ chế Chú ý (Attention Mechanism - SE Block)
+
+Vấn đề của bản gốc: Các mạng CNN thông thường (kể cả VGG16 hay MobileNet cơ bản) trích xuất ra hàng trăm kênh đặc trưng (feature channels), nhưng chúng đối xử với mọi kênh là quan trọng như nhau. Mô hình không biết cách "nhắm mắt" làm ngơ trước những đặc trưng nhiễu (như hậu cảnh).
+
+Cải tiến thuật toán: Viết mã chèn thêm một khối Squeeze-and-Excitation (SE Block) vào ngay trước lớp phân loại cuối cùng. Thuật toán này giúp mô hình tự học cách đánh trọng số (weighting) cho các kênh.
+7.  Đột phá về Thuật toán Tối ưu hóa: Cosine Annealing Learning Rate
+
+Vấn đề của bản gốc: Tác giả giữ nguyên Tốc độ học (Learning Rate) từ đầu đến cuối, hoặc chỉ dùng hàm giảm dần bậc thang đơn giản. Điều này khiến mô hình dễ bị kẹt ở "đáy giả" (Local Minima) trong không gian toán học, không đạt được độ chính xác tối đa.
+
+Cải tiến thuật toán: Thay thế bộ tối ưu mặc định bằng thuật toán lịch trình Cosine Annealing. Tốc độ học sẽ giảm dần theo hình sin (đường cong Cosine), mượt mà rà phanh khi tiến gần đến điểm hội tụ, và đôi khi "nảy" lên lại một chút để thoát khỏi các bẫy cực tiểu cục bộ. Giúp mô hình hội tụ ở độ chính xác cao hơn hẳn.
+ 

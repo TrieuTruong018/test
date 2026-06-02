@@ -1,0 +1,22 @@
+# Data and Datasets
+DataSets/
+datasets/
+yolo_waste_runs/
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Heavy Model Weights
+*.pt
+*.h5
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# IDE files
+.idea/
+.vscode/
+.DS_Store
